@@ -1,0 +1,31 @@
+---
+title: zen-vl
+description: Vision-language models
+---
+
+# zen-vl
+
+Vision-language models
+
+## Overview
+
+[Model documentation coming from existing content]
+
+## Quick Start
+
+```python
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+model = AutoModelForCausalLM.from_pretrained("zenlm/zen-vl")
+tokenizer = AutoTokenizer.from_pretrained("zenlm/zen-vl")
+
+inputs = tokenizer("Your prompt", return_tensors="pt")
+outputs = model.generate(**inputs)
+print(tokenizer.decode(outputs[0]))
+```
+
+## Resources
+
+- 🤗 [HuggingFace](https://huggingface.co/zenlm/zen-vl)
+- 📦 [GitHub](https://github.com/zenlm/zen-vl)
+- 📄 [Paper](/papers/zen-vl_whitepaper.pdf)
