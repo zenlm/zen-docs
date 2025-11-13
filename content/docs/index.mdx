@@ -1,0 +1,77 @@
+---
+title: Zen LM Documentation
+description: Open-source, efficient, and privacy-first AI models
+---
+
+# Welcome to Zen LM
+
+Zen LM is a family of next-generation language models built on Qwen3 architecture, focusing on delivering high-performance, efficient, and open-source AI across multiple scales.
+
+## Why Zen LM?
+
+### 🚀 Ultra-Efficient
+From 0.6B to 480B parameters. Optimized for deployment on phones, laptops, and AI supercomputers.
+
+### 🔒 Truly Private
+100% local processing. No accounts, no telemetry, no tracking. Your data stays on your device.
+
+### 🌱 Environmentally Responsible
+95% less energy than cloud AI. Carbon-negative operations supporting environmental preservation.
+
+### 💚 Free Forever
+Apache 2.0 licensed. No premium tiers, no API fees, no hidden costs.
+
+## Model Family
+
+### Language Models
+
+- **[zen-nano](/docs/models/zen-nano)** - 0.6B ultra-lightweight edge model
+- **[zen-eco](/docs/models/zen-eco)** - 4B efficient model family  
+- **[zen-agent](/docs/models/zen-agent)** - 4B tool-calling and functions
+- **[zen-coder](/docs/models/zen-coder)** - 4B-480B code generation
+- **[zen-next](/docs/models/zen-next)** - 80B professional-grade LLM
+
+### Multimodal Models
+
+- **[zen-omni](/docs/models/zen-omni)** - 7B multimodal (text + vision + audio)
+- **[zen-vl](/docs/models/zen-vl)** - Vision-language understanding
+- **[zen-designer](/docs/models/zen-designer)** - Design and UI generation
+
+### Media Generation
+
+- **[zen-director](/docs/models/zen-director)** - Text/image-to-video
+- **[zen-3d](/docs/models/zen-3d)** - 3D asset generation
+- **[zen-video](/docs/models/zen-video)** - Video synthesis
+- **[zen-musician](/docs/models/zen-musician)** - Music generation
+- **[zen-foley](/docs/models/zen-foley)** - Audio effects
+
+### Specialized
+
+- **[zen-guard](/docs/models/zen-guard)** - Content safety
+- **[zen-embedding](/docs/models/zen-embedding)** - Text embeddings
+- **[zen-scribe](/docs/models/zen-scribe)** - Audio transcription
+
+## Quick Start
+
+```python
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+model = AutoModelForCausalLM.from_pretrained("zenlm/zen-nano")
+tokenizer = AutoTokenizer.from_pretrained("zenlm/zen-nano")
+
+inputs = tokenizer("Hello, I am", return_tensors="pt")
+outputs = model.generate(**inputs, max_length=100)
+print(tokenizer.decode(outputs[0]))
+```
+
+## Organizations
+
+**Hanzo AI Inc** - Techstars '17 Portfolio • Award-winning GenAI lab • [hanzo.ai](https://hanzo.ai)  
+**Zoo Labs Foundation** - 501(c)(3) Non-Profit • Environmental preservation • [zoolabs.io](https://zoolabs.io)
+
+## Contact
+
+- 🌐 [zenlm.org](https://zenlm.org)
+- 💬 [Discord](https://discord.gg/hanzoai)
+- 🐦 [Twitter](https://twitter.com/hanzoai)
+- 📧 [hello@zenlm.org](mailto:hello@zenlm.org)

@@ -1,0 +1,31 @@
+---
+title: zen-omni
+description: Multimodal (text+vision+audio)
+---
+
+# zen-omni
+
+Multimodal (text+vision+audio)
+
+## Overview
+
+[Model documentation coming from existing content]
+
+## Quick Start
+
+```python
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+model = AutoModelForCausalLM.from_pretrained("zenlm/zen-omni")
+tokenizer = AutoTokenizer.from_pretrained("zenlm/zen-omni")
+
+inputs = tokenizer("Your prompt", return_tensors="pt")
+outputs = model.generate(**inputs)
+print(tokenizer.decode(outputs[0]))
+```
+
+## Resources
+
+- 🤗 [HuggingFace](https://huggingface.co/zenlm/zen-omni)
+- 📦 [GitHub](https://github.com/zenlm/zen-omni)
+- 📄 [Paper](/papers/zen-omni_whitepaper.pdf)

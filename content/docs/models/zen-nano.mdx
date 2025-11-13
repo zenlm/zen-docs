@@ -1,0 +1,31 @@
+---
+title: zen-nano
+description: Ultra-lightweight edge model (0.6B)
+---
+
+# zen-nano
+
+Ultra-lightweight edge model (0.6B)
+
+## Overview
+
+[Model documentation coming from existing content]
+
+## Quick Start
+
+```python
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+model = AutoModelForCausalLM.from_pretrained("zenlm/zen-nano")
+tokenizer = AutoTokenizer.from_pretrained("zenlm/zen-nano")
+
+inputs = tokenizer("Your prompt", return_tensors="pt")
+outputs = model.generate(**inputs)
+print(tokenizer.decode(outputs[0]))
+```
+
+## Resources
+
+- 🤗 [HuggingFace](https://huggingface.co/zenlm/zen-nano)
+- 📦 [GitHub](https://github.com/zenlm/zen-nano)
+- 📄 [Paper](/papers/zen-nano_whitepaper.pdf)
