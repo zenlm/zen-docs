@@ -1,0 +1,47 @@
+# Zen LM Documentation
+
+> Documentation for Zen, Hanzo AI's family of 30+ open-source foundation models.
+
+## About
+
+Zen LM is Hanzo AI's open-source large language model family. The Zen series includes models optimized for coding (Zen Coder), general intelligence (Zen Pro, Zen Max), multimodal understanding (Zen VL), creative tasks (Zen Artist, Zen Musician), and specialized agents. All models are Apache 2.0 licensed and available on Hugging Face.
+
+## Model Families
+
+- Zen Coder Flash — Fast code completion and generation
+- Zen Coder — Advanced code generation, refactoring, and debugging
+- Zen Coder Max — Largest coding model with full-repo context
+- Zen Pro — General-purpose reasoning and instruction following
+- Zen Max — Flagship model for complex reasoning
+- Zen Ultra — Research-grade model for frontier tasks
+- Zen VL — Vision-language multimodal model
+- Zen Nano — Lightweight model for edge/mobile deployment
+- Zen Guard — Content safety and moderation model
+- Zen Scribe — Document understanding and generation
+- Zen Artist — Image generation and editing
+- Zen Musician — Music composition and audio generation
+- Zen Video — Video generation and editing
+- Zen Live — Real-time streaming inference
+- Zen Translator — Multilingual translation
+
+## Key Features
+
+- Open weights (Apache 2.0 license)
+- Available on Hugging Face and Hanzo Cloud
+- Optimized for NVIDIA, AMD, and Apple Silicon
+- MLX quantized variants for Mac
+- GGUF/GGML support for local inference
+- Built on Qwen3+ architecture
+
+## Links
+
+- [Zen Models Hub](https://hanzo.ai/zen)
+- [Hugging Face](https://huggingface.co/hanzoai)
+- [Documentation](https://docs.hanzo.ai/zen)
+- [Hanzo AI Platform](https://hanzo.ai)
+- [GitHub](https://github.com/hanzoai)
+
+## Contact
+
+- support@hanzo.ai
+- https://hanzo.ai/contact
