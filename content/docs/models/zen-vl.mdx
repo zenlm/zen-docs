@@ -1,31 +1,106 @@
 ---
-title: zen-vl
-description: Vision-language models
+title: Zen VL
+description: Vision-language model family (4B, 8B, 30B) with native function calling and visual agent capabilities
 ---
 
-# zen-vl
+# Zen VL
 
-Vision-language models
+Zen VL is a family of vision-language models built on the Zen VL architecture, available at three scales. All variants include vision understanding, OCR across 32 languages, and multimodal reasoning. Agent variants add native function calling for GUI interaction, web navigation, and structured output extraction from images.
 
-## Overview
+## Model Family
 
-[Model documentation coming from existing content]
+| Model | Parameters | Context | Type |
+|-------|------------|---------|------|
+| [zen-vl-4b-instruct](https://huggingface.co/zenlm/zen-vl-4b-instruct) | 4B | 256K | Base VL |
+| [zen-vl-4b-agent](https://huggingface.co/zenlm/zen-vl-4b-agent) | 4B | 256K | VL + Function Calling |
+| [zen-vl-8b-instruct](https://huggingface.co/zenlm/zen-vl-8b-instruct) | 8B | 256K | Base VL |
+| [zen-vl-8b-agent](https://huggingface.co/zenlm/zen-vl-8b-agent) | 8B | 256K | VL + Function Calling |
+| [zen-vl-30b-instruct](https://huggingface.co/zenlm/zen-vl-30b-instruct) | 31B MoE | 256K | Base VL |
+| [zen-vl-30b-agent](https://huggingface.co/zenlm/zen-vl-30b-agent) | 31B MoE | 256K | VL + Function Calling |
+
+## Capabilities
+
+- **Visual understanding** — Image analysis, video comprehension, spatial reasoning
+- **OCR** — 32 languages and writing systems
+- **Multimodal reasoning** — STEM, math, code from images
+- **Function calling** (agent variants) — Tool use with visual context, structured JSON output
+- **GUI interaction** — Web navigation, element recognition, parameter extraction from screenshots
 
 ## Quick Start
 
 ```python
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForVision2Seq, AutoProcessor
+from PIL import Image
+import torch
 
-model = AutoModelForCausalLM.from_pretrained("zenlm/zen-vl")
-tokenizer = AutoTokenizer.from_pretrained("zenlm/zen-vl")
+model = AutoModelForVision2Seq.from_pretrained(
+    "zenlm/zen-vl-4b-instruct",
+    torch_dtype=torch.bfloat16,
+    device_map="auto",
+    trust_remote_code=True
+)
+processor = AutoProcessor.from_pretrained(
+    "zenlm/zen-vl-4b-instruct",
+    trust_remote_code=True
+)
 
-inputs = tokenizer("Your prompt", return_tensors="pt")
-outputs = model.generate(**inputs)
-print(tokenizer.decode(outputs[0]))
+image = Image.open("path/to/image.jpg")
+
+messages = [
+    {"role": "user", "content": "Describe this image in detail."}
+]
+
+text = processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+inputs = processor(text=[text], images=[image], return_tensors="pt").to(model.device)
+
+outputs = model.generate(**inputs, max_new_tokens=300)
+print(processor.batch_decode(outputs, skip_special_tokens=True)[0])
 ```
 
-## Resources
+## Function Calling (Agent Models)
 
-- 🤗 [HuggingFace](https://huggingface.co/zenlm/zen-vl)
-- 📦 [GitHub](https://github.com/zenlm/zen-vl)
-- 📄 [Paper](/papers/zen-vl_whitepaper.pdf)
+```python
+model = AutoModelForVision2Seq.from_pretrained(
+    "zenlm/zen-vl-4b-agent",
+    torch_dtype=torch.bfloat16,
+    device_map="auto",
+    trust_remote_code=True
+)
+
+image = Image.open("screenshot.png")
+
+messages = [
+    {"role": "user", "content": "Click the login button in this screenshot."}
+]
+
+# Model outputs structured function call:
+# {
+#   "thinking": "I see a login button at coordinates...",
+#   "function_call": {
+#     "name": "click_element",
+#     "arguments": {"x": 120, "y": 200, "element_type": "button"}
+#   }
+# }
+```
+
+## Use Cases
+
+- Document parsing (PDFs, invoices, forms, charts)
+- Visual question answering
+- GUI automation and web navigation
+- Code generation from UI screenshots
+- Multimodal agent workflows
+
+## Architecture
+
+Zen VL uses the Zen VL architecture with:
+
+- **DeepStack** — Hierarchical vision encoder for fine-grained detail
+- **Interleaved-MRoPE** — Multi-resolution position encoding for video
+- **Text-Timestamp Alignment** — Temporal event localization in video
+- **256K context** (expandable to 1M)
+
+## Get Started
+
+- [HuggingFace](https://huggingface.co/zenlm/zen-vl-4b-instruct)
+- [GitHub](https://github.com/zenlm/zen-vl)

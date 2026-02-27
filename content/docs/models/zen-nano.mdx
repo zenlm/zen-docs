@@ -1,31 +1,99 @@
 ---
-title: zen-nano
-description: Ultra-lightweight edge model (0.6B)
+title: Zen Nano
+description: Ultra-lightweight 0.6B edge model for mobile and IoT deployment
 ---
 
-# zen-nano
+# Zen Nano
 
-Ultra-lightweight edge model (0.6B)
+Zen Nano is an ultra-lightweight 0.6B parameter language model from the Zen MoDE family, optimized for edge devices, mobile applications, and resource-constrained environments. It delivers practical language capabilities at 44,000 tokens/sec on Apple Silicon.
 
-## Overview
+## Specifications
 
-[Model documentation coming from existing content]
+| Property | Value |
+|----------|-------|
+| Parameters | 0.6B |
+| Architecture | Zen MoDE (dense transformer) |
+| Context Length | 40,960 tokens |
+| Languages | English, Chinese |
+| License | Apache 2.0 |
+| Formats | SafeTensors (BF16), GGUF, MLX |
+
+## Throughput
+
+| Platform | Speed |
+|----------|-------|
+| M3 Max (MLX) | 44,000 tokens/sec |
+| RTX 4090 (GGUF Q4) | 35,000 tokens/sec |
+| iPhone 15 Pro | 8,000 tokens/sec |
+| Raspberry Pi 5 | 2,500 tokens/sec |
+
+## Memory Usage
+
+| Format | VRAM/RAM |
+|--------|----------|
+| Q2_K | 0.3 GB |
+| Q4_K_M | 0.4 GB |
+| Q8_0 | 0.7 GB |
+| F16 | 1.2 GB |
 
 ## Quick Start
 
 ```python
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-model = AutoModelForCausalLM.from_pretrained("zenlm/zen-nano")
-tokenizer = AutoTokenizer.from_pretrained("zenlm/zen-nano")
+model = AutoModelForCausalLM.from_pretrained(
+    "zenlm/zen-nano-0.6b",
+    torch_dtype="auto",
+    device_map="auto"
+)
+tokenizer = AutoTokenizer.from_pretrained("zenlm/zen-nano-0.6b")
 
-inputs = tokenizer("Your prompt", return_tensors="pt")
-outputs = model.generate(**inputs)
-print(tokenizer.decode(outputs[0]))
+messages = [{"role": "user", "content": "Hello!"}]
+text = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+inputs = tokenizer(text, return_tensors="pt").to(model.device)
+outputs = model.generate(**inputs, max_new_tokens=100)
+print(tokenizer.decode(outputs[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True))
 ```
 
-## Resources
+## Use Cases
 
-- 🤗 [HuggingFace](https://huggingface.co/zenlm/zen-nano)
-- 📦 [GitHub](https://github.com/zenlm/zen-nano)
-- 📄 [Paper](/papers/zen-nano_whitepaper.pdf)
+- Edge AI applications and embedded systems
+- Mobile chatbots and offline AI assistants
+- IoT device intelligence
+- Real-time inference on consumer hardware
+- Resource-constrained environments
+
+## Formats
+
+- **SafeTensors** (BF16) — native PyTorch/Transformers
+- **MLX** — optimized for Apple Silicon (M1/M2/M3)
+- **GGUF** — Q2_K, Q4_K_M, Q5_K_M, Q8_0, F16 for llama.cpp
+
+### MLX (Apple Silicon)
+
+```python
+from mlx_lm import load, generate
+
+model, tokenizer = load("zenlm/zen-nano-0.6b")
+response = generate(model, tokenizer, prompt="Hello!", max_tokens=100)
+```
+
+### GGUF (llama.cpp)
+
+```bash
+./llama-cli -m zen-nano-0.6b-Q4_K_M.gguf -p "Hello!" -n 100
+```
+
+## Benchmarks
+
+| Task | Score |
+|------|-------|
+| MMLU | 35.2% (5-shot) |
+| GSM8K | 28.4% (8-shot CoT) |
+| HumanEval | 24.1% (pass@1) |
+| MATH | 18.7% (4-shot) |
+
+## Get Started
+
+- [HuggingFace](https://huggingface.co/zenlm/zen-nano-0.6b)
+- [GitHub](https://github.com/zenlm/zen-nano)

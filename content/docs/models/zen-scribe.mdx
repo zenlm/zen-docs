@@ -1,31 +1,75 @@
 ---
-title: zen-scribe
-description: Audio transcription
+title: Zen Scribe
+description: 4B professional content writing model for long-form generation and structured documents
 ---
 
-# zen-scribe
+# Zen Scribe
 
-Audio transcription
+Zen Scribe is a 4B parameter language model from the Zen MoDE family, fine-tuned for writing tasks. It produces coherent, well-structured prose across extended contexts with consistent voice — suitable for blog posts, technical documentation, reports, creative writing, and automated content pipelines.
 
-## Overview
+## Specifications
 
-[Model documentation coming from existing content]
+| Property | Value |
+|----------|-------|
+| Parameters | 4B |
+| Architecture | Zen MoDE (transformer, decoder-only) |
+| Context Window | 32,768 tokens |
+| Languages | English, Chinese, Japanese, Korean, French, German, Spanish, Portuguese, Italian, Russian |
+| License | Apache 2.0 |
+| Formats | SafeTensors (BF16), GGUF, MLX |
 
 ## Quick Start
 
 ```python
 from transformers import AutoModelForCausalLM, AutoTokenizer
+import torch
 
-model = AutoModelForCausalLM.from_pretrained("zenlm/zen-scribe")
+model = AutoModelForCausalLM.from_pretrained(
+    "zenlm/zen-scribe",
+    torch_dtype=torch.bfloat16,
+    device_map="auto"
+)
 tokenizer = AutoTokenizer.from_pretrained("zenlm/zen-scribe")
 
-inputs = tokenizer("Your prompt", return_tensors="pt")
-outputs = model.generate(**inputs)
-print(tokenizer.decode(outputs[0]))
+messages = [
+    {"role": "system", "content": "You are a technical writer. Write clearly and concisely."},
+    {"role": "user", "content": "Write a 500-word introduction to Kubernetes networking."}
+]
+
+text = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+inputs = tokenizer(text, return_tensors="pt").to(model.device)
+outputs = model.generate(**inputs, max_new_tokens=600, temperature=0.7, top_p=0.9, repetition_penalty=1.1)
+print(tokenizer.decode(outputs[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True))
 ```
 
-## Resources
+## Use Cases
 
-- 🤗 [HuggingFace](https://huggingface.co/zenlm/zen-scribe)
-- 📦 [GitHub](https://github.com/zenlm/zen-scribe)
-- 📄 [Paper](/papers/zen-scribe_whitepaper.pdf)
+- **Technical documentation** — API references, guides, READMEs
+- **Blog and editorial** — Long-form articles, opinion pieces, explainers
+- **Business writing** — Reports, proposals, executive summaries
+- **Creative writing** — Fiction, screenplays, narrative content
+- **Structured output** — Templated content, form letters, product descriptions
+
+## Formats
+
+- **SafeTensors** (BF16) — native PyTorch/Transformers
+- **MLX** — `mlx_lm.generate --model zenlm/zen-scribe --max-tokens 500`
+- **GGUF** — `llama-cli -m zen-scribe-q4_k_m.gguf -n 512`
+
+### Hanzo API
+
+```bash
+curl https://api.hanzo.ai/v1/chat/completions \
+  -H "Authorization: Bearer $HANZO_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "zen-scribe",
+    "messages": [{"role": "user", "content": "Write a product announcement for a new AI API:"}],
+    "max_tokens": 400
+  }'
+```
+
+## Get Started
+
+- [HuggingFace](https://huggingface.co/zenlm/zen-scribe)
+- [GitHub](https://github.com/zenlm/zen-scribe)

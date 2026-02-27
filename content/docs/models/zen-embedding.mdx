@@ -1,31 +1,136 @@
 ---
-title: zen-embedding
-description: Text embeddings
+title: Zen Embedding
+description: Multilingual text embedding models — #1 MTEB multilingual at 70.58 mean score
 ---
 
-# zen-embedding
+# Zen Embedding
 
-Text embeddings
+Zen Embedding is a family of multilingual text embedding models from Zen LM, available in three sizes. The 8B model ranks #1 on the MTEB multilingual leaderboard (score 70.58, June 2025). All models support 100+ languages, 32K context, Matryoshka Representation Learning (MRL) for flexible vector dimensions, and instruction-aware embeddings for retrieval tasks.
 
-## Overview
+## Model Family
 
-[Model documentation coming from existing content]
+| Model | Parameters | Embedding Dim | Context | MTEB Multilingual |
+|-------|------------|---------------|---------|------------------|
+| [zen-embedding-0.6b](https://huggingface.co/zenlm/zen-embedding-0.6b) | 0.6B | 1024 | 32K | 64.33 |
+| [zen-embedding-4b](https://huggingface.co/zenlm/zen-embedding-4b) | 4B | 2560 | 32K | 69.45 |
+| [zen-embedding-8b](https://huggingface.co/zenlm/zen-embedding-8b) | 8B | 4096 | 32K | 70.58 |
+
+## Key Features
+
+- **#1 MTEB Multilingual** — 8B model achieves 70.58 mean score
+- **100+ languages** — Multilingual, cross-lingual, and code retrieval
+- **32K context** — Long document and passage embeddings
+- **MRL support** — Truncate vectors to any size without retraining
+- **Instruction-aware** — Task instructions improve retrieval by 1-5%
 
 ## Quick Start
 
 ```python
-from transformers import AutoModelForCausalLM, AutoTokenizer
+import torch
+import torch.nn.functional as F
+from transformers import AutoTokenizer, AutoModel
 
-model = AutoModelForCausalLM.from_pretrained("zenlm/zen-embedding")
-tokenizer = AutoTokenizer.from_pretrained("zenlm/zen-embedding")
+def last_token_pool(last_hidden_states, attention_mask):
+    left_padding = (attention_mask[:, -1].sum() == attention_mask.shape[0])
+    if left_padding:
+        return last_hidden_states[:, -1]
+    else:
+        sequence_lengths = attention_mask.sum(dim=1) - 1
+        batch_size = last_hidden_states.shape[0]
+        return last_hidden_states[
+            torch.arange(batch_size, device=last_hidden_states.device),
+            sequence_lengths
+        ]
 
-inputs = tokenizer("Your prompt", return_tensors="pt")
-outputs = model.generate(**inputs)
-print(tokenizer.decode(outputs[0]))
+def get_detailed_instruct(task_description: str, query: str) -> str:
+    return f'Instruct: {task_description}\nQuery:{query}'
+
+task = 'Given a web search query, retrieve relevant passages that answer the query'
+
+queries = [
+    get_detailed_instruct(task, 'What is the capital of France?'),
+    get_detailed_instruct(task, 'Explain gradient descent'),
+]
+documents = [
+    "Paris is the capital of France.",
+    "Gradient descent is an optimization algorithm that minimizes a function by iteratively moving in the direction of steepest descent.",
+]
+
+model_name = 'zenlm/zen-embedding-8b'
+tokenizer = AutoTokenizer.from_pretrained(model_name, padding_side='left')
+model = AutoModel.from_pretrained(model_name)
+
+batch_dict = tokenizer(
+    queries + documents,
+    padding=True,
+    truncation=True,
+    max_length=8192,
+    return_tensors="pt",
+)
+
+with torch.no_grad():
+    outputs = model(**batch_dict)
+    embeddings = last_token_pool(outputs.last_hidden_state, batch_dict['attention_mask'])
+
+embeddings = F.normalize(embeddings, p=2, dim=1)
+scores = embeddings[:2] @ embeddings[2:].T
+print(scores.tolist())
 ```
 
-## Resources
+## Use Cases
 
-- 🤗 [HuggingFace](https://huggingface.co/zenlm/zen-embedding)
-- 📦 [GitHub](https://github.com/zenlm/zen-embedding)
-- 📄 [Paper](/papers/zen-embedding_whitepaper.pdf)
+- Semantic search and retrieval
+- Document clustering and classification
+- Cross-lingual retrieval
+- Code search
+- RAG (Retrieval-Augmented Generation) pipelines
+
+## Instruction Guidance
+
+Apply task instructions to queries only, not documents:
+
+```python
+# Retrieval
+task = 'Given a web search query, retrieve relevant passages that answer the query'
+
+# Classification
+task = 'Classify the sentiment of the following text'
+
+# Code retrieval
+task = 'Given a code comment, retrieve the code implementation that matches'
+```
+
+## Matryoshka Embeddings (MRL)
+
+All models support dimension truncation without retraining:
+
+```python
+# Full dimension (8B: 4096)
+full_embeddings = F.normalize(embeddings, p=2, dim=1)
+
+# Truncate to 1024 for storage efficiency
+truncated = F.normalize(embeddings[:, :1024], p=2, dim=1)
+```
+
+## MTEB Benchmarks
+
+### Multilingual
+
+| Model | Size | Mean | Retrieval | STS |
+|-------|------|------|-----------|-----|
+| zen-embedding-0.6b | 0.6B | 64.33 | 64.64 | 76.17 |
+| zen-embedding-4b | 4B | 69.45 | 69.60 | 80.86 |
+| zen-embedding-8b | 8B | **70.58** | **70.88** | **81.08** |
+
+## Hardware Requirements
+
+| Model | VRAM (FP16) |
+|-------|-------------|
+| zen-embedding-0.6b | 2 GB |
+| zen-embedding-4b | 8 GB |
+| zen-embedding-8b | 16 GB |
+
+## Get Started
+
+- [HuggingFace](https://huggingface.co/zenlm/zen-embedding-8b)
+- [GitHub](https://github.com/zenlm/zen-embedding)

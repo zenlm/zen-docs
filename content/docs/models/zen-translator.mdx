@@ -1,0 +1,127 @@
+---
+title: Zen Translator
+description: Real-time multimodal translation with voice cloning and lip synchronization — 18 input languages, sub-second latency
+---
+
+# Zen Translator
+
+Zen Translator is a real-time multimodal translation pipeline combining speech translation, voice cloning, and lip synchronization. It supports 18 input languages and 10 output languages with sub-second end-to-end latency, 3-second voice cloning to preserve speaker characteristics, and accurate lip synchronization for video dubbing.
+
+## Pipeline Components
+
+| Component | Parameters | Latency |
+|-----------|------------|---------|
+| Zen Omni (translation) | 30B (3B active MoE) | ~500ms |
+| CosyVoice 2.0 (voice cloning) | 0.5B | ~150ms |
+| Wav2Lip (lip sync) | ~100M | ~200ms |
+| **Total** | — | **<1 second** |
+
+## Language Support
+
+- **Input** — 18 languages + 6 dialects: English, Chinese, Japanese, Korean, Spanish, French, German, Italian, Portuguese, Russian, Arabic, Hindi, Thai, Vietnamese, Indonesian, Malay, Turkish, Polish, Cantonese, Shanghainese, and more
+- **Output** — 10 languages: English, Chinese, Japanese, Korean, Spanish, French, German, Italian, Portuguese, Russian
+
+## Quick Start
+
+```bash
+# Install
+git clone https://github.com/zenlm/zen-translator.git
+cd zen-translator
+make install
+
+# Download models (~62GB)
+make download
+
+# Translate a video
+zen-translate video.mp4 -o translated.mp4 -t spanish
+```
+
+## Python API
+
+```python
+from zen_translator import TranslationPipeline, TranslatorConfig
+
+config = TranslatorConfig(
+    target_language="es",
+    enable_lip_sync=True,
+    preserve_emotion=True,
+)
+
+pipeline = TranslationPipeline(config)
+await pipeline.load()
+
+# Translate video
+result = await pipeline.translate_video(
+    video="news_clip.mp4",
+    output_path="translated.mp4",
+)
+```
+
+## Voice Cloning
+
+Register a speaker with 3 seconds of reference audio:
+
+```python
+# Register speaker
+await pipeline.register_speaker(
+    speaker_id="john_doe",
+    reference_audio="reference.wav"
+)
+
+# Translate with cloned voice
+result = await pipeline.translate_audio(
+    audio="input.wav",
+    target_lang="es",
+    speaker_id="john_doe"
+)
+```
+
+## Real-Time Streaming
+
+```javascript
+const ws = new WebSocket('ws://localhost:8000/ws/translate');
+ws.send(JSON.stringify({ target_lang: 'es', speaker_id: 'my_voice' }));
+ws.send(audioChunk);  // Send audio chunks
+ws.onmessage = (event) => {
+    // Receive translated audio chunks
+};
+```
+
+## Use Cases
+
+- Video dubbing for content localization
+- Live conference interpretation
+- News anchor translation (domain-specific finetuning included)
+- Real-time WebRTC conversation translation
+- Broadcast media pipeline automation
+
+## Hardware Requirements
+
+| Model | VRAM | Disk |
+|-------|------|------|
+| Zen Omni | 16 GB | 60 GB |
+| CosyVoice 2.0 | 2 GB | 1 GB |
+| Wav2Lip | 2 GB | 500 MB |
+| **Total** | **~20 GB** | **~62 GB** |
+
+For smaller deployments:
+
+```bash
+make download-quantized  # 4-bit Zen Omni (~15GB disk)
+```
+
+## REST API
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/translate/audio` | POST | Translate audio file |
+| `/translate/video` | POST | Translate video with lip sync |
+| `/speakers/register` | POST | Register voice for cloning |
+| `/speakers` | GET | List registered speakers |
+| `/languages` | GET | Supported languages |
+| `/ws/translate` | WS | Real-time streaming |
+
+## Get Started
+
+- [HuggingFace](https://huggingface.co/zenlm/zen-omni)
+- [GitHub](https://github.com/zenlm/zen-translator)
