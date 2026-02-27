@@ -1,0 +1,111 @@
+---
+title: Zen Max
+description: 1T+ reasoning-first MoE model with 256K context, extended thinking, and 200+ sequential tool calls
+---
+
+# Zen Max
+
+Zen Max is the largest model in the Zen family — a 1T+ reasoning-first language model built for test-time scaling through extended thinking and tool-calling. With 32B active parameters via MoE sparse activation and up to 128K thinking tokens per step, it executes 200-300 sequential tool calls without human intervention for agentic reasoning, search, coding, and mathematical problem solving.
+
+## Specifications
+
+| Property | Value |
+|----------|-------|
+| Total Parameters | 1.04T (1,044B) |
+| Active Parameters | 32B (MoE, 384 experts, top-8 routing) |
+| Architecture | Zen MoDE (MoE) |
+| Context Window | 256K tokens |
+| Thinking Capacity | 96K-128K tokens per step |
+| License | Apache 2.0 |
+| Formats | SafeTensors (BF16), INT4 (native QAT) |
+
+## Key Capabilities
+
+- **Agentic reasoning** — Extended chain-of-thought with `<think>` tags, up to 128K thinking tokens
+- **Agentic search** — 200-300 sequential tool calls, real-world information gathering
+- **Agentic coding** — Multi-language support, terminal automation, component-heavy web development
+- **Mathematical reasoning** — PhD-level math with Python tool integration
+- **Heavy Mode** — 8 parallel reasoning trajectories with reflective aggregation
+
+## Quick Start
+
+```python
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+model = AutoModelForCausalLM.from_pretrained("zenlm/zen-max")
+tokenizer = AutoTokenizer.from_pretrained("zenlm/zen-max")
+
+messages = [
+    {
+        "role": "user",
+        "content": "Research and analyze the latest developments in quantum computing, then write a comprehensive report."
+    }
+]
+
+# Model will think, search, browse, and synthesize autonomously
+response = model.chat(tokenizer, messages, thinking_budget=128000, max_tool_calls=300)
+```
+
+## Use Cases
+
+- Frontier-difficulty reasoning and research synthesis
+- Large-scale software engineering (SWE-Bench: 71.3%)
+- Mathematical olympiad problems (AIME 2025: 99.1%)
+- Complex agentic workflows requiring hundreds of tool calls
+- Expert-level domain Q&A (GPQA-Diamond: 84.5%)
+
+## Benchmark Performance
+
+### Reasoning
+
+| Benchmark | Score |
+|-----------|-------|
+| HLE (with tools) | 44.9% |
+| AIME 2025 (with Python) | 99.1% |
+| HMMT 2025 (with Python) | 95.1% |
+| IMO-AnswerBench | 78.6% |
+| GPQA-Diamond | 84.5% |
+
+### Agentic Search
+
+| Benchmark | Score |
+|-----------|-------|
+| BrowseComp | 60.2% |
+| Frames | 87.0% |
+
+### Coding
+
+| Benchmark | Score |
+|-----------|-------|
+| SWE-Bench Verified | 71.3% |
+| LiveCodeBench v6 | 83.1% |
+| Terminal-Bench | 47.1% |
+
+## Formats
+
+| Format | Size | Notes |
+|--------|------|-------|
+| SafeTensors (BF16) | ~370 GB | 62 shards, full precision |
+| INT4 (native QAT) | ~185 GB | 2x speed, minimal quality loss |
+
+## Hardware Requirements
+
+| Setup | VRAM | Speed |
+|-------|------|-------|
+| Budget (1x 24GB + 256GB RAM) | 280 GB combined | ~1-2 tokens/s |
+| High performance (4x A100 80GB) | 320 GB VRAM | 5+ tokens/s |
+| Optimal (8x A100 80GB) | 640 GB VRAM | Maximum throughput |
+
+## Thinking Budget
+
+| Mode | Thinking Tokens | Use When |
+|------|----------------|----------|
+| Low | 32K | Fast responses |
+| Medium | 96K | Balanced reasoning |
+| High | 128K | Complex problems |
+| Heavy | 8 x 128K | Maximum accuracy |
+
+## Get Started
+
+- [HuggingFace](https://huggingface.co/zenlm/zen-max)
+- [GitHub](https://github.com/zenlm/zen-max)

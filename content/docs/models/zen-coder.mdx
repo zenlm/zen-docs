@@ -1,31 +1,120 @@
 ---
-title: zen-coder
-description: Code generation (4B-480B)
+title: Zen Coder
+description: Agentic coding AI from edge to frontier — 4B, 31B MoE, and 480B MoE variants
 ---
 
-# zen-coder
+# Zen Coder
 
-Code generation (4B-480B)
+Zen Coder is Zen LM's family of code-focused AI models spanning three capability tiers. The flagship `zen-coder-480b-instruct` is a 480B-parameter Mixture of Experts model with 35B active parameters, delivering state-of-the-art results on agentic coding, browser-use, and tool-use benchmarks. The family supports 358 programming languages, fill-in-the-middle (FIM), function calling, and extended chain-of-thought reasoning.
 
-## Overview
+## Model Family
 
-[Model documentation coming from existing content]
+| Model | Parameters | Active | Context | Use Case |
+|-------|------------|--------|---------|----------|
+| [zen-coder](https://huggingface.co/zenlm/zen-coder) | 4B | 4B | 32K | Edge / mobile |
+| [zen-coder-flash](https://huggingface.co/zenlm/zen-coder-flash) | 31B MoE | 3B | 131K | Balanced performance |
+| [zen-coder-480b-instruct](https://huggingface.co/zenlm/zen-coder-480b-instruct) | 480B MoE | 35B | 256K | Frontier agentic coding |
+
+## Highlights
+
+- State-of-the-art on SWE-bench agentic coding benchmarks
+- 256K context (extendable to 1M via Yarn) — handles full repository scale
+- 358 programming languages (ABAP to Zig)
+- Fill-in-the-middle (FIM) code insertion at cursor position
+- Function calling with structured tool-use
+- Extended chain-of-thought reasoning for complex engineering tasks
 
 ## Quick Start
+
+### Flagship (480B)
 
 ```python
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-model = AutoModelForCausalLM.from_pretrained("zenlm/zen-coder")
-tokenizer = AutoTokenizer.from_pretrained("zenlm/zen-coder")
+model = AutoModelForCausalLM.from_pretrained(
+    "zenlm/zen-coder-480b-instruct",
+    torch_dtype="auto",
+    device_map="auto"
+)
+tokenizer = AutoTokenizer.from_pretrained("zenlm/zen-coder-480b-instruct")
 
-inputs = tokenizer("Your prompt", return_tensors="pt")
-outputs = model.generate(**inputs)
-print(tokenizer.decode(outputs[0]))
+messages = [{"role": "user", "content": "Write a quicksort algorithm in Python with type hints."}]
+text = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+inputs = tokenizer([text], return_tensors="pt").to(model.device)
+
+generated_ids = model.generate(**inputs, max_new_tokens=4096)
+output = tokenizer.batch_decode(
+    [generated_ids[0][len(inputs.input_ids[0]):]],
+    skip_special_tokens=True
+)[0]
+print(output)
 ```
 
-## Resources
+### Edge (4B)
 
-- 🤗 [HuggingFace](https://huggingface.co/zenlm/zen-coder)
-- 📦 [GitHub](https://github.com/zenlm/zen-coder)
-- 📄 [Paper](/papers/zen-coder_whitepaper.pdf)
+```python
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+model = AutoModelForCausalLM.from_pretrained("zenlm/zen-coder", device_map="auto")
+tokenizer = AutoTokenizer.from_pretrained("zenlm/zen-coder")
+
+messages = [{"role": "user", "content": "Write a binary search in Rust."}]
+text = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+inputs = tokenizer([text], return_tensors="pt").to(model.device)
+output = model.generate(**inputs, max_new_tokens=1024)
+print(tokenizer.decode(output[0][len(inputs.input_ids[0]):], skip_special_tokens=True))
+```
+
+## Fill-in-the-Middle (FIM)
+
+```python
+input_text = """<|fim_prefix|>def quicksort(arr):
+    if len(arr) <= 1:
+        return arr
+    pivot = arr[len(arr) // 2]
+    <|fim_suffix|>
+    middle = [x for x in arr if x == pivot]
+    right = [x for x in arr if x > pivot]
+    return quicksort(left) + middle + quicksort(right)<|fim_middle|>"""
+
+messages = [
+    {"role": "system", "content": "You are a code completion assistant."},
+    {"role": "user", "content": input_text}
+]
+```
+
+## Use Cases
+
+- Agentic coding and software engineering automation
+- Full-repository context understanding
+- Code review, debugging, and refactoring
+- Multi-language code translation
+- Fill-in-the-middle completion in IDEs
+
+## Formats
+
+- **SafeTensors** (BF16) — native precision
+- **GGUF** — Q4_K_M, Q5_K_M, Q8_0 for llama.cpp
+- **MLX** — Apple Silicon optimized
+
+## Performance Benchmarks
+
+| Benchmark | zen-coder-480b | zen-coder-flash |
+|-----------|---------------|-----------------|
+| SWE-bench Verified | State-of-the-art | 59.2% |
+| AIME 2025 | Competitive | 91.6% |
+| GPQA | Competitive | 75.2% |
+| t²-Bench | Competitive | 79.5% |
+
+## Hardware Requirements
+
+| Model | VRAM |
+|-------|------|
+| zen-coder (4B) | 8 GB |
+| zen-coder-flash (31B MoE) | 24 GB |
+| zen-coder-480b-instruct | 8x 80 GB |
+
+## Get Started
+
+- [HuggingFace](https://huggingface.co/zenlm/zen-coder-480b-instruct)
+- [GitHub](https://github.com/zenlm/zen-coder)

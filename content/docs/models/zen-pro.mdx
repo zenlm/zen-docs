@@ -1,0 +1,135 @@
+---
+title: Zen Pro
+description: Professional-grade 8B model with instruct, thinking, and agent variants
+---
+
+# Zen Pro
+
+Zen Pro is Zen LM's 8B professional model from the Zen MoDE family, designed for production workloads requiring strong instruction following, multi-step reasoning, and tool use. Three specialized variants cover general chat, extended reasoning, and agentic tool use. Runs on a single 16GB GPU.
+
+## Specifications
+
+| Property | Value |
+|----------|-------|
+| Parameters | 8B |
+| Architecture | Zen MoDE (transformer, decoder-only) |
+| Context Window | 32,768 tokens |
+| Languages | English, Chinese, Japanese, Korean, French, German, Spanish, Italian, Portuguese, Russian |
+| License | Apache 2.0 |
+| Formats | SafeTensors (BF16), GGUF, MLX |
+
+## Model Variants
+
+| Variant | Best For |
+|---------|----------|
+| [zen-pro-instruct](https://huggingface.co/zenlm/zen-pro-instruct) | Chat, Q&A, summarization, drafting |
+| [zen-pro-thinking](https://huggingface.co/zenlm/zen-pro-thinking) | Complex reasoning, math, analysis |
+| [zen-pro-agent](https://huggingface.co/zenlm/zen-pro-agent) | Tool use, API calls, automation |
+
+## Quick Start
+
+### Instruct
+
+```python
+from transformers import AutoModelForCausalLM, AutoTokenizer
+import torch
+
+model = AutoModelForCausalLM.from_pretrained(
+    "zenlm/zen-pro-instruct",
+    torch_dtype=torch.bfloat16,
+    device_map="auto"
+)
+tokenizer = AutoTokenizer.from_pretrained("zenlm/zen-pro-instruct")
+
+messages = [
+    {"role": "system", "content": "You are Zen Pro, a professional AI assistant."},
+    {"role": "user", "content": "Summarize the key differences between REST and GraphQL APIs."}
+]
+
+text = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+inputs = tokenizer(text, return_tensors="pt").to(model.device)
+outputs = model.generate(**inputs, max_new_tokens=512, temperature=0.6)
+print(tokenizer.decode(outputs[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True))
+```
+
+### Thinking (extended reasoning)
+
+```python
+messages = [
+    {"role": "user", "content": "What are the market shares after 3 years if products start at 40%, 35%, 25% and grow at 10%, -5%, 20% annually?"}
+]
+
+text = tokenizer.apply_chat_template(
+    messages,
+    tokenize=False,
+    add_generation_prompt=True,
+    enable_thinking=True
+)
+inputs = tokenizer(text, return_tensors="pt").to(model.device)
+outputs = model.generate(**inputs, max_new_tokens=2048, temperature=0.6)
+print(tokenizer.decode(outputs[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True))
+```
+
+### Agent (tool use)
+
+```python
+tools = [
+    {
+        "type": "function",
+        "function": {
+            "name": "search_web",
+            "description": "Search the web for current information",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {"type": "string", "description": "Search query"}
+                },
+                "required": ["query"]
+            }
+        }
+    }
+]
+
+messages = [{"role": "user", "content": "What's the latest in quantum computing research?"}]
+text = tokenizer.apply_chat_template(messages, tools=tools, tokenize=False, add_generation_prompt=True)
+```
+
+## Use Cases
+
+- Production chat and Q&A APIs
+- Multi-step reasoning and analysis (thinking variant)
+- Automated workflows with tool integration (agent variant)
+- Summarization, drafting, and content tasks
+- Customer support and enterprise applications
+
+## Formats
+
+| Format | VRAM | Speed |
+|--------|------|-------|
+| BF16 (full) | 16 GB | Fast |
+| GGUF Q8_0 | 10 GB | Fast |
+| GGUF Q4_K_M | 6 GB | Moderate |
+| MLX 4-bit | 6 GB (Apple Silicon) | Native Metal |
+
+### vLLM (production)
+
+```bash
+vllm serve zenlm/zen-pro-instruct \
+  --dtype bfloat16 \
+  --max-model-len 32768 \
+  --tensor-parallel-size 1
+```
+
+### Hanzo API
+
+```bash
+curl https://api.hanzo.ai/v1/chat/completions \
+  -H "Authorization: Bearer $HANZO_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"model": "zen-pro", "messages": [{"role": "user", "content": "Explain ACID transactions."}]}'
+```
+
+## Get Started
+
+- [HuggingFace](https://huggingface.co/zenlm/zen-pro-instruct)
+- [GitHub](https://github.com/zenlm/zen-pro)

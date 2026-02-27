@@ -1,0 +1,97 @@
+---
+title: Zen Reranker
+description: 8B dual-task embedding and reranking model with native 7680-dim output for Decentralized Semantic Optimization
+---
+
+# Zen Reranker
+
+Zen Reranker is an 8B dual-task embedding and reranking model built on the Zen Embedding architecture. It natively outputs 7680-dimensional embeddings — the canonical dimension for the Hanzo and Zoo Networks — eliminating alignment overhead in Decentralized Semantic Optimization (DSO) pipelines. It supports 100+ languages, 8K context, and BitDelta compression.
+
+## Specifications
+
+| Property | Value |
+|----------|-------|
+| Parameters | 8.2B (8B base + 200M projection head) |
+| Embedding Dimension | 7680 (native, no alignment needed) |
+| Context Length | 8,192 tokens |
+| Languages | 100+ |
+| License | Apache 2.0 |
+| Tasks | Embedding + Reranking (dual-task) |
+
+## Model Variants
+
+| Variant | Context | Optimized For |
+|---------|---------|---------------|
+| zen-reranker-8b | 8K | General embedding and reranking |
+| zen-reranker-8b-code | 16K | Code search (Hanzo Network) |
+| zen-reranker-8b-research | 16K | Scientific papers (Zoo Network) |
+| zen-reranker-1.5b | 4K | Edge devices (distilled) |
+
+## Quick Start
+
+```python
+from zen_reranker import ZenReranker
+
+model = ZenReranker.from_pretrained("zenlm/zen-reranker-8b")
+
+# Generate 7680-dim embeddings
+texts = [
+    "How to handle async errors in Rust?",
+    "Explain gradient descent",
+]
+
+embeddings = model.encode(texts)
+print(embeddings.shape)  # (2, 7680)
+```
+
+## Reranking
+
+```python
+query = "async error handling in Rust"
+docs = [
+    "Use Result<T, E> with ? operator",
+    "Tokio provides timeout utilities",
+    "Python has try-except blocks",
+    "Result type propagates errors"
+]
+
+scores = model.rerank(query, docs)
+ranked = sorted(zip(docs, scores), key=lambda x: x[1], reverse=True)
+```
+
+## Use Cases
+
+- Decentralized Semantic Optimization (DSO) retrieval with no alignment overhead
+- Cross-model experience retrieval (Hanzo + Zoo Networks)
+- Code search and documentation (coding variant)
+- Research paper retrieval (research variant)
+- Semantic similarity and clustering
+
+## Architecture
+
+Zen Reranker extends Zen Embedding 8B with:
+
+1. **Expanded projection head** — 4096 → 7680 dimensions via learned linear projection
+2. **Dual-task training** — Contrastive embedding loss + cross-encoder reranking loss
+3. **BitDelta optimization** — 31.87x compression (964 bytes per embedding) with 97.3% quality retention
+
+## Performance
+
+### MTEB Benchmark
+
+| Model | Avg | Retrieval | Reranking | Clustering | STS |
+|-------|-----|-----------|-----------|------------|-----|
+| Zen-Embedding-8B | 65.1 | 63.2 | 60.1 | 53.8 | 83.4 |
+| **Zen-Reranker-8B** | **67.3** | **65.8** | **62.4** | **55.2** | **85.1** |
+
+### DSO Cross-Model Retrieval (Precision@5)
+
+| Model | Precision@5 |
+|-------|-------------|
+| Zen-Embedding-8B | 88% |
+| **Zen-Reranker-8B** | **98%** (native 7680-dim) |
+
+## Get Started
+
+- [HuggingFace](https://huggingface.co/zenlm/zen-reranker-8b)
+- [GitHub](https://github.com/zenlm/zen-reranker)

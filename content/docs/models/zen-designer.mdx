@@ -1,31 +1,117 @@
 ---
-title: zen-designer
-description: Design and UI generation
+title: Zen Designer
+description: 235B vision-language model for images, video, documents, spatial reasoning, and GUI interaction
 ---
 
-# zen-designer
+# Zen Designer
 
-Design and UI generation
+Zen Designer is Zen LM's flagship vision-language model: 235B total parameters with 22B active via Mixture of Experts. It delivers comprehensive visual understanding across images, video, documents, charts, and GUIs, combined with strong language generation capabilities. Available in instruct and thinking variants.
 
-## Overview
+## Specifications
 
-[Model documentation coming from existing content]
+| Property | Value |
+|----------|-------|
+| Total Parameters | 235B |
+| Active Parameters | 22B (MoE) |
+| Architecture | Dense vision encoder + MoE language decoder |
+| Context Window | 256K tokens (expandable to 1M) |
+| Languages | 100+ (OCR in 32 scripts) |
+| License | Apache 2.0 |
+
+## Model Variants
+
+| Model | Context | Best For |
+|-------|---------|----------|
+| [zen-designer-235b-a22b-instruct](https://huggingface.co/zenlm/zen-designer-235b-a22b-instruct) | 256K | Direct VLM tasks, document parsing |
+| [zen-designer-235b-a22b-thinking](https://huggingface.co/zenlm/zen-designer-235b-a22b-thinking) | 256K | Complex visual analysis, extended reasoning |
+
+## Capabilities
+
+- **Visual understanding** — Detailed image analysis, video reasoning with temporal awareness
+- **Document parsing** — PDFs, invoices, forms, tables, charts
+- **OCR** — 32 languages and writing systems
+- **Spatial reasoning** — 2D/3D spatial grounding, bounding box prediction
+- **GUI interaction** — Web navigation, element recognition, computer use workflows
+- **Code generation** — HTML/CSS/JS from UI screenshots, Draw.io and flowchart comprehension
 
 ## Quick Start
 
 ```python
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForVision2Seq, AutoProcessor
+import torch
+from PIL import Image
 
-model = AutoModelForCausalLM.from_pretrained("zenlm/zen-designer")
-tokenizer = AutoTokenizer.from_pretrained("zenlm/zen-designer")
+model_name = "zenlm/zen-designer-235b-a22b-instruct"
 
-inputs = tokenizer("Your prompt", return_tensors="pt")
-outputs = model.generate(**inputs)
-print(tokenizer.decode(outputs[0]))
+processor = AutoProcessor.from_pretrained(model_name)
+model = AutoModelForVision2Seq.from_pretrained(
+    model_name,
+    torch_dtype=torch.bfloat16,
+    device_map="auto"
+)
+
+image = Image.open("document.png")
+
+messages = [
+    {
+        "role": "user",
+        "content": [
+            {"type": "image"},
+            {"type": "text", "text": "Extract all text and data from this document in structured format."}
+        ]
+    }
+]
+
+text = processor.apply_chat_template(messages, add_generation_prompt=True)
+inputs = processor(text=text, images=image, return_tensors="pt").to(model.device)
+
+with torch.no_grad():
+    generated_ids = model.generate(**inputs, max_new_tokens=2048)
+
+response = processor.decode(generated_ids[0], skip_special_tokens=True)
+print(response)
 ```
 
-## Resources
+## Extended Thinking
 
-- 🤗 [HuggingFace](https://huggingface.co/zenlm/zen-designer)
-- 📦 [GitHub](https://github.com/zenlm/zen-designer)
-- 📄 [Paper](/papers/zen-designer_whitepaper.pdf)
+```python
+model_name = "zenlm/zen-designer-235b-a22b-thinking"
+# Same loading pattern — generates up to 8192 tokens of reasoning
+```
+
+## Use Cases
+
+- Document intelligence and data extraction
+- Visual question answering
+- Video analysis and temporal reasoning
+- GUI automation and web agent workflows
+- STEM and mathematical reasoning from images
+- Diagram and schematic comprehension
+
+## Formats
+
+- **SafeTensors** (BF16) — full precision
+- **GGUF** (quantized) — for llama.cpp deployment
+
+## Hardware Requirements
+
+| Setup | VRAM |
+|-------|------|
+| Minimum (INT4) | 4x 24 GB |
+| Recommended (BF16) | 4x 80 GB |
+| Optimal | 8x 80 GB |
+
+## Deployment
+
+```bash
+# vLLM (recommended for production)
+vllm serve zenlm/zen-designer-235b-a22b-instruct \
+    --tensor-parallel-size 4 \
+    --max-model-len 65536
+```
+
+## Get Started
+
+- [HuggingFace (instruct)](https://huggingface.co/zenlm/zen-designer-235b-a22b-instruct)
+- [HuggingFace (thinking)](https://huggingface.co/zenlm/zen-designer-235b-a22b-thinking)
+- [GitHub](https://github.com/zenlm/zen-designer)

@@ -1,31 +1,114 @@
 ---
-title: zen-omni
-description: Multimodal (text+vision+audio)
+title: Zen Omni
+description: 30B hypermodal model with text, vision, and audio understanding plus speech synthesis
 ---
 
-# zen-omni
+# Zen Omni
 
-Multimodal (text+vision+audio)
+Zen Omni is a 30B hypermodal language model from the Zen MoDE family, built on a Thinker-Talker MoE architecture. With 3B active parameters via sparse activation, it supports 119 languages for text, 19 languages for speech input, and 10 languages for speech output — enabling real-time speech-to-speech translation, multimodal understanding, and audio generation.
 
-## Overview
+## Specifications
 
-[Model documentation coming from existing content]
+| Property | Value |
+|----------|-------|
+| Architecture | Zen MoDE Thinker-Talker (MoE) |
+| Total Parameters | 30B |
+| Active Parameters | 3B (MoE sparse activation) |
+| Context Length | 32,768 tokens |
+| Text Languages | 119 |
+| Speech Input | 19 languages |
+| Speech Output | 10 languages |
+| License | Apache 2.0 |
+
+## Model Variants
+
+| Variant | Description |
+|---------|-------------|
+| zen-omni | Base multimodal model |
+| zen-omni-instruct | Instruction-following for chat and tasks |
+| zen-omni-thinking | Extended chain-of-thought reasoning |
+| zen-omni-captioner | Audio and visual captioning |
+
+## Architecture
+
+Zen Omni uses a Thinker-Talker design:
+
+- **Input Encoders** — Audio encoder (32 layers, 1280 dim), Vision encoder (27 layers, 1152 dim), Text embeddings (151,936 vocab)
+- **Thinker** — 48 transformer layers, 128 MoE experts, 8 active per token, cross-modal attention fusion
+- **Talker** — Streaming speech synthesis via Code2Wav codec (16 quantizers, 2048 codebook, 24kHz)
 
 ## Quick Start
 
 ```python
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoProcessor
 
-model = AutoModelForCausalLM.from_pretrained("zenlm/zen-omni")
-tokenizer = AutoTokenizer.from_pretrained("zenlm/zen-omni")
+model_id = "zenlm/zen-omni"
+model = AutoModelForCausalLM.from_pretrained(
+    model_id,
+    torch_dtype="auto",
+    device_map="auto"
+)
+processor = AutoProcessor.from_pretrained(model_id)
 
-inputs = tokenizer("Your prompt", return_tensors="pt")
-outputs = model.generate(**inputs)
-print(tokenizer.decode(outputs[0]))
+messages = [
+    {"role": "system", "content": "You are Zen, a helpful AI assistant."},
+    {"role": "user", "content": "Explain quantum computing in simple terms."}
+]
+
+text = processor.apply_chat_template(messages, add_generation_prompt=True, tokenize=False)
+inputs = processor(text=text, return_tensors="pt").to(model.device)
+outputs = model.generate(**inputs, max_new_tokens=512)
+response = processor.decode(outputs[0], skip_special_tokens=True)
+print(response)
 ```
 
-## Resources
+## Speech-to-Speech Translation
 
-- 🤗 [HuggingFace](https://huggingface.co/zenlm/zen-omni)
-- 📦 [GitHub](https://github.com/zenlm/zen-omni)
-- 📄 [Paper](/papers/zen-omni_whitepaper.pdf)
+```python
+import librosa
+import soundfile as sf
+
+source_audio, sr = librosa.load("japanese_speech.wav", sr=16000)
+
+messages = [
+    {"role": "user", "content": [
+        {"type": "audio", "audio": source_audio},
+        {"type": "text", "text": "Translate this Japanese speech to English and speak the translation."}
+    ]}
+]
+
+inputs = processor(messages, return_tensors="pt").to(model.device)
+outputs = model.generate(**inputs, max_new_tokens=2048, return_audio=True)
+
+sf.write("english_translation.wav", outputs.audio[0], 24000)
+```
+
+## Use Cases
+
+- Real-time speech-to-speech translation across 19+ languages
+- Multimodal question answering (image, audio, text)
+- Audio captioning and transcription
+- Complex reasoning with extended thinking mode
+- Video dubbing pipeline (integrates with zen-dub)
+
+## Formats
+
+| Format | Size | RAM Required |
+|--------|------|-------------|
+| SafeTensors (BF16) | ~60 GB | 80 GB+ |
+| MLX 4-bit | ~15 GB | 20 GB |
+| GGUF Q4_K_M | ~15 GB | 20 GB |
+
+## Performance
+
+| Benchmark | Score |
+|-----------|-------|
+| Speech Translation (BLEU) | 42.3 (En/Ja bidirectional) |
+| Image Understanding (VQA) | 78.2% |
+| Audio Transcription (WER) | 4.2% |
+| Cross-Modal Reasoning | 85.1% (MMLU multimodal) |
+
+## Get Started
+
+- [HuggingFace](https://huggingface.co/zenlm/zen-omni)
+- [GitHub](https://github.com/zenlm/zen-omni)
