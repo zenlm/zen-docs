@@ -1,3 +1,5 @@
+<p align="center"><img src=".github/hero.svg" alt="zen-docs" width="880"></p>
+
 # Zen LM Documentation
 
 Fumadocs-based documentation site for all Zen LM models.
