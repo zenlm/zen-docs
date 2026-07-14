@@ -7,13 +7,12 @@ export function Logo({ size = 24, className = "" }: { size?: number; className?:
       xmlns="http://www.w3.org/2000/svg"
       className={className}
     >
-      {/* Zen circle with enso-style design */}
-      <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" strokeWidth="3" opacity="0.8" />
-      <path 
-        d="M50 10 Q70 30 50 50 Q30 70 50 90" 
-        fill="none" 
-        stroke="currentColor" 
-        strokeWidth="4" 
+      {/* Zen ensō — canonical single-arc mark from github.com/zenlm/logo */}
+      <path
+        d="M66.22 83.26 A37 37 0 1 1 85.57 60.20"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="11"
         strokeLinecap="round"
       />
     </svg>
