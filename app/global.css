@@ -1,4 +1,6 @@
 @import 'tailwindcss';
+/* Zen — the faces and the --font-sans / --font-mono role tokens. */
+@import '@hanzo/design/tokens/fonts.css';
 
 @layer base {
   :root {
