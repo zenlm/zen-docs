@@ -8,7 +8,7 @@ export const metadata = {
     template: "%s | Zen LM",
   },
   description:
-    "Democratizing AI while protecting our planet. Open-source, efficient, and privacy-first language models from Zen LM.",
+    "Zen LM, the open model family of Zoo Labs Foundation, a 501(c)(3) non-profit: Zen 6 and Zen 6 Flash for agentic coding on your own machine and marketing work.",
 }
 
 export default function Layout({ children }: { children: ReactNode }) {

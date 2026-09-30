@@ -9,7 +9,7 @@ interface PageProps {
 
 export async function generateStaticParams() {
   return source.getPages().map((page) => ({
-    slug: page.slug.split('/'),
+    slug: page.slugs,
   }))
 }
 
@@ -31,7 +31,7 @@ export default async function Page({ params }: PageProps) {
 
   if (!page) notFound()
 
-  const MDX = page.data.default || (() => null)
+  const MDX = page.data.body
 
   return (
     <DocsPage>
